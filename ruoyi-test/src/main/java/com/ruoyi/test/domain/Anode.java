@@ -12,6 +12,10 @@ public class Anode {
     private Integer x;
     //y坐标
     private Integer y;
+    //g 距离起始点的步长
+    private Integer g;
+    //h 距离终点的步长
+    private Integer h;
     private String parentId;
     //曼哈顿算法 f = x+y;
     private Integer f;
@@ -20,7 +24,6 @@ public class Anode {
     public Anode(Integer x, Integer y) {
         this.x = x;
         this.y = y;
-        this.f= x+y;
     }
     public Anode() {
     }
@@ -46,6 +49,10 @@ public class Anode {
 
     public void setX(Integer x) {
         this.x = x;
+//        if (null!=this.y){
+//            this.f = x + this.y;
+//        }
+
     }
 
     public Integer getY() {
@@ -54,6 +61,10 @@ public class Anode {
 
     public void setY(Integer y) {
         this.y = y;
+//        if (null!=this.x){
+//            this.f = y + this.x;
+//        }
+
     }
 
     public String getParentId() {
@@ -62,5 +73,21 @@ public class Anode {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public Integer getG() {
+        return g;
+    }
+
+    public void setG(Integer g) {
+        this.g = g;
+    }
+
+    public Integer getH() {
+        return h;
+    }
+
+    public void setH(Integer h) {
+        this.h = h;
     }
 }

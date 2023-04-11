@@ -51,7 +51,8 @@ public class AStarController {
         hinderList.add(anode4);
         hinderList.add(anode5);
         hinderList.add(anode6);
-        setNodeByNode(startNode,endNode,openList,closeList,hinderList);
+        Anode anode = setNodeByNode(startNode, endNode, openList, closeList, hinderList);
+
 
         //以给定一个起点开始
 
@@ -72,68 +73,27 @@ public class AStarController {
     }
 
     /***/
-    public void setNodeByNode(Anode anode,Anode endNode,List<Anode> openList,List<Anode> closeList,List<Anode> hinderList){
+    public Anode setNodeByNode(Anode anode,Anode endNode,List<Anode> openList,List<Anode> closeList,List<Anode> hinderList){
         Integer x = anode.getX();
         Integer y = anode.getY();
 
+        Anode returnNode = new Anode();
         //将anode相邻的4个点加入到openlist
         if (x+1<=20){
             Anode right_node = new Anode(x+1,y);
-            //要先判断节点周边的点是否本身就存在于openList，如果存在的话还要判断路径
-            if (judgeExit(right_node,openList)){
-                    //递归寻找当前节点的所有父亲节点的 x的长度和
-                Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(anode, openList, closeList);
-                Integer rightNodeX = right_node.getX();
-                //比较当前节点到起始的x和右节点的x大小
-                if (rightNodeX >= xByStartNodeToCurrentNode+1){
-
-
-                }
-
-            }else{
-                for (Anode hNode : hinderList) {
-                    if (!(right_node.getX() == hNode.getX() && right_node.getY() == hNode.getY())){
-                        openList.add(right_node);
-                        break;
-                    }
-                }
-            }
-            //设置父亲节点
-            right_node.setParentId(anode.getId());
-
+            calculateAdjoinNode(right_node, anode,endNode,openList,closeList, hinderList);
         }
         if (y-1>=0){
             Anode down_node = new Anode(x,y-1);
-            //设置父亲节点
-            down_node.setParentId(anode.getId());
-            for (Anode hNode : hinderList) {
-                if (!(down_node.getX() == hNode.getX() && down_node.getY() == hNode.getY())){
-                    openList.add(down_node);
-                    break;
-                }
-            }
+            calculateAdjoinNode(down_node, anode,endNode,openList,closeList, hinderList);
         }
         if (x-1>=0){
             Anode left_node = new Anode(x-1,y);
-            //设置父亲节点
-            left_node.setParentId(anode.getId());
-            for (Anode hNode : hinderList) {
-                if (!(left_node.getX() == hNode.getX() && left_node.getY() == hNode.getY())){
-                    openList.add(left_node);
-                    break;
-                }
-            }
+            calculateAdjoinNode(left_node, anode,endNode,openList,closeList, hinderList);
         }
         if (y+1<=20){
             Anode up_node = new Anode(x,y+1);
-            //设置父亲节点
-            up_node.setParentId(anode.getId());
-            for (Anode hNode : hinderList) {
-                if (!(up_node.getX() == hNode.getX() && up_node.getY() == hNode.getY())){
-                    openList.add(up_node);
-                    break;
-                }
-            }
+            calculateAdjoinNode(up_node, anode,endNode,openList,closeList, hinderList);
         }
         //按F的从小到大排序
         openList.sort(new Comparator<Anode>() {
@@ -143,21 +103,23 @@ public class AStarController {
             }
         });
        // openList.stream().sorted(Comparator.comparing(Anode::getF)).collect(Collectors.toList());
-
-        //取出第一个点
-        Anode nextNode = openList.get(0);
         //第一个点丢到无用列表
         closeList.add(anode);
 
+
+        //取出第一个点
+        Anode nextNode = openList.get(0);
+
+
         for (Anode openNode : openList) {
             if (endNode.getX()==openNode.getX() && endNode.getY() == openNode.getY()) {
-                return;
+                returnNode = openNode;
+                break;
+            }else{
+                 setNodeByNode(nextNode,endNode,openList,closeList,hinderList);
             }
         }
-
-        setNodeByNode(nextNode,endNode,openList,closeList,hinderList);
-
-
+        return returnNode;
     }
 
     //判断对象的一个属性是否存在该对象的List中
@@ -172,6 +134,7 @@ public class AStarController {
     //递归根据当前节点获取距离原节点startNode的x值
     public Integer getXByStartNodeToCurrentNode(Anode anode,List<Anode> openList,List<Anode> closeList){
         Integer x = anode.getX();
+        Integer y = anode.getY();
         Integer finalX = 0;
         String parentId = anode.getParentId();
 
@@ -181,7 +144,13 @@ public class AStarController {
                 if (openNode.getId().equals(parentId)){
                     nextNode = new Anode();
                     BeanUtils.copyProperties(openNode,nextNode);
-                    finalX = x + finalX + openNode.getX();
+                    int i = openNode.getX().intValue();
+                    int j = anode.getX().intValue();
+                    int v = i-j;
+                 //   double final1 = Math.sqrt(Math.pow(Math.abs(openNode.getX() - anode.getX()), 2));
+
+                  //  Math.sqrt(Math.pow(Math.abs(openNode.getX() - anode.getX()), 2)).
+                   // finalX = finalX + Integer.parseI;
                     break;
                 }
             }
@@ -205,5 +174,82 @@ public class AStarController {
         objects.add(anode);
         boolean b = judgeExit(anode2, objects);
         System.out.println(b);
+    }
+
+    //计算相邻节点的X Y F
+    public void calculateAdjoinNode(Anode calculatedAnode,Anode lastNode,Anode endNode,List<Anode> openList,List<Anode> closeList,
+                                    List<Anode> hinderList){
+        //1.判断邻居节点是否在closeList中，是的话忽略
+        if (closeList.size() != 0){
+            for (int i = 0; i < closeList.size(); i++) {
+                if (!(closeList.get(i).getX()==calculatedAnode.getX() && closeList.get(i).getY()==calculatedAnode.getY())){
+                    if (i==closeList.size()-1){
+                        // 如果邻居已经在 Open List 中（即该邻居已有父节点），计算从当前节点移动到该邻居是否能使其得到更小的 x 值。
+                        // 如果能，则把该邻居的父节点重设为当前节点，并更新其 x 和 F 值。
+                        if (judgeExit(calculatedAnode,openList)){
+                            //递归寻找当前节点的所有父亲节点的 x的长度和
+                            Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+                            Integer rightNodeX = calculatedAnode.getX();
+                            //比较当前节点到起始的x和右节点的x大小
+                            if (rightNodeX >= xByStartNodeToCurrentNode+1){
+                                //f会自动计算
+                                calculatedAnode.setX(xByStartNodeToCurrentNode+1);
+                                calculatedAnode.setParentId(lastNode.getId());
+                            }
+
+                        }else{//3.如果邻居不在 Open List 中，计算 x、y、F，设置父节点，并将其加入 Open List
+                            for (int j = 0; j < hinderList.size(); j++) {
+                                if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
+                                        calculatedAnode.getY() == hinderList.get(j).getY())){
+                                    if (j == hinderList.size()-1){
+                                        //设置父亲节点
+                                        calculatedAnode.setParentId(lastNode.getId());
+                                        openList.add(calculatedAnode);
+//                                    if (calculatedAnode.getX()==endNode.getX() && calculatedAnode.getY()==endNode.getY()){
+//                                        return ;
+//                                    }
+//                                    break;
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+        }else{
+            // 如果邻居已经在 Open List 中（即该邻居已有父节点），计算从当前节点移动到该邻居是否能使其得到更小的 x 值。
+            // 如果能，则把该邻居的父节点重设为当前节点，并更新其 x 和 F 值。
+            if (judgeExit(calculatedAnode,openList)){
+                //递归寻找当前节点的所有父亲节点的 x的长度和
+                Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+                Integer rightNodeX = calculatedAnode.getX();
+                //比较当前节点到起始的x和右节点的x大小
+                if (rightNodeX >= xByStartNodeToCurrentNode+1){
+                    //f会自动计算
+                    calculatedAnode.setX(xByStartNodeToCurrentNode+1);
+                    calculatedAnode.setParentId(lastNode.getId());
+                }
+
+            }else{//3.如果邻居不在 Open List 中，计算 x、y、F，设置父节点，并将其加入 Open List
+                for (int j = 0; j < hinderList.size(); j++) {
+                    if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
+                            calculatedAnode.getY() == hinderList.get(j).getY())){
+                        if (j == hinderList.size()-1){
+                            //设置父亲节点
+                            calculatedAnode.setParentId(lastNode.getId());
+                            openList.add(calculatedAnode);
+//                                    if (calculatedAnode.getX()==endNode.getX() && calculatedAnode.getY()==endNode.getY()){
+//                                        return ;
+//                                    }
+//                                    break;
+                        }
+                    }
+                }
+
+            }
+        }
+
     }
 }

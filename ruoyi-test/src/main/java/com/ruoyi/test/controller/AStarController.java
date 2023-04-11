@@ -133,8 +133,7 @@ public class AStarController {
 
     //递归根据当前节点获取距离原节点startNode的x值
     public Integer getXByStartNodeToCurrentNode(Anode anode,List<Anode> openList,List<Anode> closeList){
-        Integer x = anode.getX();
-        Integer y = anode.getY();
+
         Integer finalX = 0;
         String parentId = anode.getParentId();
 
@@ -144,13 +143,8 @@ public class AStarController {
                 if (openNode.getId().equals(parentId)){
                     nextNode = new Anode();
                     BeanUtils.copyProperties(openNode,nextNode);
-                    int i = openNode.getX().intValue();
-                    int j = anode.getX().intValue();
-                    int v = i-j;
-                 //   double final1 = Math.sqrt(Math.pow(Math.abs(openNode.getX() - anode.getX()), 2));
-
-                  //  Math.sqrt(Math.pow(Math.abs(openNode.getX() - anode.getX()), 2)).
-                   // finalX = finalX + Integer.parseI;
+                   Double x = Math.sqrt(Math.pow(Math.abs(openNode.getX() - anode.getX()), 2));
+                    finalX = finalX + x.intValue();
                     break;
                 }
             }

@@ -51,8 +51,8 @@ public class AStarController {
         List<Anode> searchList = new ArrayList<>();
         searchList.addAll(openList);
         searchList.addAll(closeList);
-        String route = "";
-        String s = getRoute(anode.getParentId(), searchList, route,startNode);
+        String route = "[终点开始]"+ "["+anode.getX()+","+anode.getY()+"]->";
+        String s = getRoute(anode, searchList, route,startNode);
 
         //以给定一个起点开始
 
@@ -60,21 +60,22 @@ public class AStarController {
         return AjaxResult.success(s);
     }
 
-    public String getRoute(String partentId,List<Anode> searchList,String route,Anode startNode){
+    public String getRoute(Anode anode,List<Anode> searchList,String route,Anode startNode){
+        Anode nextAnode = new Anode();
         for (Anode anode7 : searchList) {
             Integer x = anode7.getX();
             Integer y = anode7.getY();
-            if (anode7.getId().equals(partentId)){
+            if (anode7.getId().equals(anode.getParentId())){
                 route = route + "["+x+","+y+"]->";
-                partentId = anode7.getParentId();
+                nextAnode.setParentId(anode7.getParentId()); ;
                 break;
             }
         }
-        if (partentId.equals("0")){
-            return route;
+        if (anode.getParentId().equals("0")){
+            return route+"[我到起点了]";
 //            return route = route + "["+startNode.getX()+","+startNode.getY()+"]->";
         }
-        return getRoute(partentId,searchList,route,startNode);
+        return getRoute(nextAnode,searchList,route,startNode);
     }
     /**对传进去的参数节点 做个简单的校验*/
     public boolean checkNode(Anode anode){

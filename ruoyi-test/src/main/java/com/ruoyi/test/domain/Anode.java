@@ -76,11 +76,15 @@ public class Anode {
     }
 
     public Integer getG() {
+
         return g;
     }
 
     public void setG(Integer g) {
         this.g = g;
+        if (null!=this.h){
+            this.f = g + this.h;
+        }
     }
 
     public Integer getH() {
@@ -89,5 +93,8 @@ public class Anode {
 
     public void setH(Integer h) {
         this.h = h;
+        if (null!=this.g){
+            this.f = h + this.g;
+        }
     }
 }

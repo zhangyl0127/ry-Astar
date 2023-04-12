@@ -24,12 +24,12 @@ public class AStarController {
     public AjaxResult getRoute(Anode startNode,Anode endNode){
         startNode = new Anode();
         startNode.setX(3);
-        startNode.setY(5);
+        startNode.setY(8);
         startNode.setG(0);
         endNode = new Anode();
         startNode.setParentId("0");//代表是起点，父顶端
-        endNode.setX(8);
-        endNode.setY(4);
+       endNode.setX(3);
+        endNode.setY(1);
         endNode.setH(0);
         startNode.setH(Math.abs(endNode.getY()-startNode.getY() )+ Math.abs(endNode.getX()-startNode.getX()));
         boolean sBool = checkNode(startNode);
@@ -42,19 +42,10 @@ public class AStarController {
         //定义一个关列表存放不再需要的点位
         List<Anode> closeList = new ArrayList<>();
         //定义一个存放障碍物的节点点位
+
         List<Anode> hinderList = new ArrayList<>();
-        Anode anode1 = new Anode(6, 3);
-        Anode anode2 = new Anode(6, 4);
-        Anode anode3 = new Anode(6, 5);
-        Anode anode4 = new Anode(6, 6);
-        Anode anode5 = new Anode(6, 7);
-        Anode anode6 = new Anode(6, 8);
-        hinderList.add(anode1);
-        hinderList.add(anode2);
-        hinderList.add(anode3);
-        hinderList.add(anode4);
-        hinderList.add(anode5);
-        hinderList.add(anode6);
+        hinderList = getTesthinderList(hinderList);
+
         Anode anode = setNodeByNode(startNode, endNode, openList, closeList, hinderList);
 
         List<Anode> searchList = new ArrayList<>();
@@ -105,19 +96,19 @@ public class AStarController {
 
         Anode returnNode = new Anode();
         //将anode相邻的4个点加入到openlist
-        if (x+1<=20){
+        if (x+1<20){
             Anode right_node = new Anode(x+1,y);
             calculateAdjoinNode(right_node, anode,endNode,openList,closeList, hinderList);
         }
-        if (y-1>=0){
+        if (y-1>0){
             Anode down_node = new Anode(x,y-1);
             calculateAdjoinNode(down_node, anode,endNode,openList,closeList, hinderList);
         }
-        if (x-1>=0){
+        if (x-1>0){
             Anode left_node = new Anode(x-1,y);
             calculateAdjoinNode(left_node, anode,endNode,openList,closeList, hinderList);
         }
-        if (y+1<=20){
+        if (y+1<20){
             Anode up_node = new Anode(x,y+1);
             calculateAdjoinNode(up_node, anode,endNode,openList,closeList, hinderList);
         }
@@ -161,7 +152,16 @@ public class AStarController {
         return 404;
 
     }
+    //判断对象的一个属性是否存障碍物List中
+    public static boolean judgeHinderListExit(Anode anode, List<Anode> HinderList){
 
+        if(HinderList.stream().filter(w->w.getX()==anode.getX() && w.getY()==anode.getY()).findAny().isPresent()){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
     //递归根据当前节点获取距离原节点startNode的g值
     public Integer getXByStartNodeToCurrentNode(Anode anode,List<Anode> openList,List<Anode> closeList){
 
@@ -208,9 +208,14 @@ public class AStarController {
     public void calculateAdjoinNode(Anode calculatedAnode,Anode lastNode,Anode endNode,List<Anode> openList,List<Anode> closeList,
                                     List<Anode> hinderList){
         //1.判断邻居节点是否在closeList中，是的话忽略
-        if (calculatedAnode.getX() == 6 && calculatedAnode.getY()==8){
+        if (calculatedAnode.getX() == 6 && calculatedAnode.getY()==5){
             System.out.println(1);
         }
+        //判断是否存在于障碍物中
+       if(judgeHinderListExit(calculatedAnode,hinderList)){
+           return;
+       }
+
         if (closeList.size() != 0){
             for (int i = 0; i < closeList.size(); i++) {
                 if (!(closeList.get(i).getX()==calculatedAnode.getX() && closeList.get(i).getY()==calculatedAnode.getY())){
@@ -233,20 +238,26 @@ public class AStarController {
                             }
 
                         }else{//3.如果邻居不在 Open List 中，计算 x、y、F，设置父节点，并将其加入 Open List
-                            for (int j = 0; j < hinderList.size(); j++) {
-                                if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
-                                        calculatedAnode.getY() == hinderList.get(j).getY())){
-                                    if (j == hinderList.size()-1){
-                                        //递归寻找从当前节点移动到原点的长度和
-                                        Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
-                                        //f会自动计算
-                                        calculatedAnode.setG(xByStartNodeToCurrentNode+1);
-                                        calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
-                                        calculatedAnode.setParentId(lastNode.getId());
-
-                                    }
-                                }
-                            }
+//                            for (int j = 0; j < hinderList.size(); j++) {
+//                                if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
+//                                        calculatedAnode.getY() == hinderList.get(j).getY())){
+//                                    if (j == hinderList.size()-1){
+//                                        //递归寻找从当前节点移动到原点的长度和
+//                                        Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+//                                        //f会自动计算
+//                                        calculatedAnode.setG(xByStartNodeToCurrentNode+1);
+//                                        calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
+//                                        calculatedAnode.setParentId(lastNode.getId());
+//
+//                                    }
+//                                }
+//                            }
+                                //递归寻找从当前节点移动到原点的长度和
+                                Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+                                //f会自动计算
+                                calculatedAnode.setG(xByStartNodeToCurrentNode+1);
+                                calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
+                                calculatedAnode.setParentId(lastNode.getId());
 
                         }
 
@@ -274,21 +285,99 @@ public class AStarController {
                 }
 
             }else{//3.如果邻居不在 Open List 中，计算 x、y、F，设置父节点，并将其加入 Open List
-                for (int j = 0; j < hinderList.size(); j++) {
-                    if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
-                            calculatedAnode.getY() == hinderList.get(j).getY())){
-                        if (j == hinderList.size()-1){
-                            //递归寻找从当前节点移动到该邻居的长度和
-                            Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
-                            calculatedAnode.setG(xByStartNodeToCurrentNode);
-                            calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
-                            calculatedAnode.setParentId(lastNode.getId());
-                        }
-                    }
-                }
+                //递归寻找从当前节点移动到该邻居的长度和
+                Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+                calculatedAnode.setG(xByStartNodeToCurrentNode);
+                calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
+                calculatedAnode.setParentId(lastNode.getId());
+
+//                for (int j = 0; j < hinderList.size(); j++) {
+//                    if (!(calculatedAnode.getX() == hinderList.get(j).getX() &&
+//                            calculatedAnode.getY() == hinderList.get(j).getY())){
+//                        if (j == hinderList.size()-1){
+//                            //递归寻找从当前节点移动到该邻居的长度和
+//                            Integer xByStartNodeToCurrentNode = getXByStartNodeToCurrentNode(lastNode, openList, closeList);
+//                            calculatedAnode.setG(xByStartNodeToCurrentNode);
+//                            calculatedAnode.setH(Math.abs(endNode.getY()-calculatedAnode.getY() )+ Math.abs(endNode.getX()-calculatedAnode.getX()));
+//                            calculatedAnode.setParentId(lastNode.getId());
+//                        }
+//                    }
+//                }
 
             }
         }
         openList.add(calculatedAnode);
+    }
+
+
+    public List<Anode>getTesthinderList( List<Anode> hinderList){
+        Anode anode1 = new Anode(1, 1);
+        Anode anode2 = new Anode(1, 5);
+        Anode anode3 = new Anode(1, 6);
+        Anode anode4 = new Anode(1, 8);
+        Anode anode5 = new Anode(1, 9);
+        Anode anode6 = new Anode(1, 16);
+        Anode anode21 = new Anode(2, 2);
+        Anode anode22 = new Anode(2, 3);
+        Anode anode23 = new Anode(2, 12);
+        Anode anode24 = new Anode(2, 13);
+        Anode anode25 = new Anode(2, 14);
+        Anode anode26 = new Anode(2, 17);
+        Anode anode27 = new Anode(2, 18);
+        Anode anode31 = new Anode(3, 4);
+        Anode anode32 = new Anode(3, 10);
+        Anode anode33 = new Anode(3, 11);
+        Anode anode41 = new Anode(4, 4);
+        Anode anode42 = new Anode(4, 10);
+        Anode anode43 = new Anode(4, 11);
+        Anode anode44 = new Anode(4, 14);
+        Anode anode45 = new Anode(4, 15);
+        Anode anode46 = new Anode(4, 16);
+        Anode anode47 = new Anode(4, 17);
+        Anode anode48 = new Anode(4, 18);
+        Anode anode49 = new Anode(4, 19);
+        Anode anode51 = new Anode(5, 5);
+        Anode anode61 = new Anode(5, 6);
+        Anode anode62 = new Anode(5, 7);
+        Anode anode63 = new Anode(5, 8);
+        Anode anode64= new Anode(5, 9);
+        Anode anode65 = new Anode(5, 13);
+        Anode anode66 = new Anode(5, 14);
+        Anode anode67 = new Anode(5, 15);
+
+        hinderList.add(anode1);
+        hinderList.add(anode2);
+        hinderList.add(anode3);
+        hinderList.add(anode4);
+        hinderList.add(anode5);
+        hinderList.add(anode6);
+        hinderList.add(anode21);
+        hinderList.add(anode22);
+        hinderList.add(anode23);
+        hinderList.add(anode24);
+        hinderList.add(anode25);
+        hinderList.add(anode26);
+        hinderList.add(anode27);
+        hinderList.add(anode31);
+        hinderList.add(anode32);
+        hinderList.add(anode33);
+        hinderList.add(anode41);
+        hinderList.add(anode42);
+        hinderList.add(anode43);
+        hinderList.add(anode44);
+        hinderList.add(anode45);
+        hinderList.add(anode46);
+        hinderList.add(anode47);
+        hinderList.add(anode48);
+        hinderList.add(anode49);
+        hinderList.add(anode51);
+        hinderList.add(anode61);
+        hinderList.add(anode62);
+        hinderList.add(anode63);
+        hinderList.add(anode64);
+        hinderList.add(anode65);
+        hinderList.add(anode66);
+        hinderList.add(anode67);
+        return  hinderList;
     }
 }
